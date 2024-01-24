@@ -4,9 +4,9 @@ Resources:
   MyS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: s3bucket-lambda-888999
+      BucketName: s3bucket-lambda-88889999
 
-  MyLambdaRole:
+  S3BucketsDataAccessRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -19,10 +19,10 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 
-  MyLambdaFunction:
+  S3BucketsDataAccessLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: lambda-write-888999
+      FunctionName: S3BucketsDataAccessLambdaFunction
       Code:
         ZipFile: |
           import json
@@ -59,33 +59,39 @@ Resources:
               data['body'] = json.dumps(bucketList)
               return data
       Handler: index.lambda_handler
-      Role: !GetAtt MyLambdaRole.Arn
+      Role: !GetAtt S3BucketsDataAccessRole.Arn
       Runtime: python3.9
-  MyRestApi:
+  GetBucketsDataAPI:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: MyRestApi
+      Name: GetBucketsDataAPI
       Description: Example REST API created with CloudFormation
-  MyResource:
+  GetBucketsDataAPIResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !Ref MyRestApi
-      ParentId: !GetAtt MyRestApi.RootResourceId
+      RestApiId: !Ref GetBucketsDataAPI
+      ParentId: !GetAtt GetBucketsDataAPI.RootResourceId
       PathPart: myresource
   MyGetMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
       HttpMethod: GET
-      ResourceId: !Ref MyResource
-      RestApiId: !Ref MyRestApi
+      ResourceId: !Ref GetBucketsDataAPIResource
+      RestApiId: !Ref GetBucketsDataAPI
       Integration:
         IntegrationHttpMethod: POST
         Type: AWS_PROXY
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations"
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${S3BucketsDataAccessLambdaFunction.Arn}/invocations"
       MethodResponses:
         - StatusCode: 200
+  MyDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: MyGetMethod
+    Properties:
+      RestApiId: !Ref GetBucketsDataAPI
+      StageName: Prod
 Outputs:
   ApiEndpoint:
     Description: Endpoint URL of the created API
-    Value: !Sub "https://${MyRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/myresource"
+    Value: !Sub "https://${GetBucketsDataAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod/myresource"
