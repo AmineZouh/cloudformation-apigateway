@@ -80,7 +80,7 @@ Resources:
       ResourceId: !Ref GetBucketsDataAPIResource
       RestApiId: !Ref GetBucketsDataAPI
       Integration:
-        IntegrationHttpMethod: POST
+        IntegrationHttpMethod: GET
         Type: AWS_PROXY
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${S3BucketsDataAccessLambdaFunction.Arn}/invocations"
       MethodResponses:
@@ -95,3 +95,4 @@ Outputs:
   ApiEndpoint:
     Description: Endpoint URL of the created API
     Value: !Sub "https://${GetBucketsDataAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod/myresource"
+#This a comment to edit the template
