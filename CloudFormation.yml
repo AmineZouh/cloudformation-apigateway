@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template for Lambda functions and S3 bucket
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: s3bucket-lambda-8889999
+
+  MyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+
+  MyLambdaFunction1:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: lambda-write-888999
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+
+          def lambda_handler(event, context):
+
+              client = boto3.client('s3')
+              bucketList = []
+              Buckets = client.list_buckets()["Buckets"]
+
+              for bucket in Buckets:
+                  bucketName = bucket["Name"]
+                  allObject = []
+                  my_objects = client.list_objects_v2( Bucket = bucketName )
+
+                  try:
+                      for obj in my_objects["Contents"]:
+                          response = client.get_object(Bucket = bucketName, Key = obj["Key"])["Body"].read().decode('utf-8')
+                          allObject.append({'name' : obj["Key"], 'content' : response})
+                      bucketList.append( {'bucketName':bucketName, 'objects':allObject} )
+                  except Exception  as e:
+                      bucketList.append({'bucketName':bucketName, 'objects':[]})
+                      continue
+
+              data={}
+              data['statusCode'] = 200
+              data['headers'] = {
+                  "Content-Type": "application/json",
+                  "Access-Control-Allow-Origin": "*",
+                  "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+                  "Access-Control-Allow-Methods": "OPTIONS,GET"
+                }
+              data['body'] = json.dumps(bucketList)
+              return data
+      Handler: index.lambda_handler
+      Role: !GetAtt MyLambdaRole.Arn
+      Runtime: python3.9
+  MyRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: MyRestApi
+      Description: Example REST API created with CloudFormation
+  MyResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MyRestApi
+      ParentId: !GetAtt MyRestApi.RootResourceId
+      PathPart: myresource
+  MyGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId: !Ref MyResource
+      RestApiId: !Ref MyRestApi
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations"
+      MethodResponses:
+        - StatusCode: 200
+Outputs:
+  ApiEndpoint:
+    Description: Endpoint URL of the created API
+    Value: !Sub "https://${MyRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/myresource"
