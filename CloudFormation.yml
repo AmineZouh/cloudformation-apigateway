@@ -4,7 +4,7 @@ Resources:
   MyS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: s3bucket-lambda-8889999
+      BucketName: s3bucket-lambda-888999
 
   MyLambdaRole:
     Type: AWS::IAM::Role
@@ -19,7 +19,7 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 
-  MyLambdaFunction1:
+  MyLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: lambda-write-888999
