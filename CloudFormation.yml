@@ -95,3 +95,4 @@ Outputs:
   ApiEndpoint:
     Description: Endpoint URL of the created API
     Value: !Sub "https://${GetBucketsDataAPI}.execute-api.${AWS::Region}.amazonaws.com/Prod/myresource"
+# This a comment
