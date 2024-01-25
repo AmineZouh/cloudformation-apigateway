@@ -23,5 +23,5 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: GatewayBasedrestAPiStack
-          template: CloudFormation.yml
+          template: cloudFormation-v2.yml
           no-fail-on-empty-changeset: "1"
