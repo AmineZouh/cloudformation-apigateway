@@ -15,15 +15,15 @@ Resources:
             Action: sts:AssumeRole 
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-      RoleName: s3bucketAccessRole
+      RoleName: lambdaRolew6
 
   lambdaFunction:
     DependsOn: lambdaIamRole
     Type: AWS::Lambda::Function
     Properties:
       Description: "get all buckets"
-      FunctionName: get-buckets-objects
-      Handler: index.lambda_handler
+      FunctionName: get-buckets
+      Handler: index.lambda_handler 
       MemorySize: 128
       Role: !GetAtt lambdaIamRole.Arn
       Runtime: python3.11 
@@ -65,7 +65,7 @@ Resources:
   allbucketsAPI:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: BucketsObjectsApi
+      Name: BucketsApi
 
   allbucketsAPIRes:
     Type: AWS::ApiGateway::Resource
