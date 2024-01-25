@@ -18,7 +18,7 @@ Resources:
       RoleName: s3bucketAccessRole
 
   lambdaFunction:
-    DependsOn: s3bucketAccessRole
+    DependsOn: lambdaIamRole
     Type: AWS::Lambda::Function
     Properties:
       Description: "get all buckets"
