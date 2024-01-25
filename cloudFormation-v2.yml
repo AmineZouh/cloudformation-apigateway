@@ -25,7 +25,7 @@ Resources:
       FunctionName: get-buckets-objects
       Handler: index.lambda_handler
       MemorySize: 128
-      Role: !GetAtt s3bucketAccessRole.Arn
+      Role: !GetAtt lambdaIamRole.Arn
       Runtime: python3.11 
       Timeout: 30
       Code: 
